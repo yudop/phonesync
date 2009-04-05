@@ -9,29 +9,35 @@
     android:layout_height="wrap_content" 
     android:textStyle="bold" android:text="PhoneSync"/>
 
-<TextView android:id="@+id/TextLog" android:layout_width="wrap_content" android:layout_height="wrap_content" android:lines="5" android:text="XXXX"></TextView><RadioButton android:id="@+id/radio_Sd_Android"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="Sd card To Android" android:checked="false"/>
+<TextView 
+	android:id="@+id/TextLog" 
+	android:layout_width="wrap_content" 
+	android:layout_height="wrap_content" 
+	android:lines="5" 
+	android:text="XXXX">
+</TextView>
 
 <RadioGroup
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
   android:orientation="vertical">
   
-  <RadioButton android:id="@+id/radio_Android_Sd"
+  <RadioButton android:id="@+id/SD_to_and"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:text="Android to Sd card" />
+      android:text="SD Card to Android" />
   
-
-
+  <RadioButton android:id="@+id/And_to_SD"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="Android to SD Card" />
+  
 </RadioGroup>
+
 
 <EditText android:id="@+id/TxFileName" 
 	android:layout_width="fill_parent" 
-	android:layout_height="wrap_content" 
-	android:text="/sdcard/contact.csv">
+	android:layout_height="wrap_content" android:text="/sdcard/PhoneSync/contacts.csv">
 </EditText>
 	
 <Button android:id="@+id/ButStart"

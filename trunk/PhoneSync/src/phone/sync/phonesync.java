@@ -8,12 +8,17 @@ import android.provider.Contacts;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.RadioButton;
+import android.widget.Toast;
 import java.io.FileInputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import android.database.Cursor;
+import android.text.Editable;
 import java.io.File;
+
 
 public class phonesync extends Activity {
 	
@@ -391,14 +396,13 @@ public class phonesync extends Activity {
 	
 	}
 	
-	void Sd_TO_Android()
+	void Sd_TO_Android(String fileName)
 	{
 		/*
          *  Read File
          * 
          */
-        
-        String fileName = "/sdcard/contact.csv";
+		
         
         /*
          * TEST FILE READ / WRITE
@@ -408,8 +412,8 @@ public class phonesync extends Activity {
         strLine = "Init \n";
         int k = 0;
         int j = 0;
-        
-        TextLog("Import SD to Android Contacts. Wait please..\n",0);
+        TextLog("File :" + fileName,1);
+        TextLog("Import SD to Android Contacts. Wait please.",1);
 	        try { // catches IOException below
 	        	
 	        	// ** File Read to SD OK
@@ -464,7 +468,9 @@ public class phonesync extends Activity {
         setContentView(R.layout.main);
         
         final Button but_start = (Button) findViewById(R.id.ButStart );
+        final EditText TxFileName = (EditText) findViewById(R.id.TxFileName );
         
+                
         TextLog("Start application..",0);
     	
         //public void Log() {
@@ -474,10 +480,26 @@ public class phonesync extends Activity {
         but_start.setOnClickListener(new OnClickListener() {
         public void onClick(View v) {
             	//Toast.makeText(phonesync.this, "Premuto", Toast.LENGTH_SHORT).show();
-            	Sd_TO_Android();
+        	TextLog("Read file..",0);
+        		final Editable fileName = TxFileName.getText();
+            	Sd_TO_Android(fileName.toString());
             }
         });
 		
-
+        OnClickListener radio_listener = new OnClickListener() {
+            public void onClick(View v) {
+                // Perform action on clicks
+                RadioButton rb = (RadioButton) v;
+                Toast.makeText(phonesync.this, rb.getText(), Toast.LENGTH_SHORT).show();
+            }
+        };
+        
+        final RadioButton SD_to_and = (RadioButton) findViewById(R.id.SD_to_and);
+        final RadioButton And_to_SD = (RadioButton) findViewById(R.id.And_to_SD);
+        SD_to_and.setOnClickListener(radio_listener);
+        And_to_SD.setOnClickListener(radio_listener);
+        // Set default value
+        SD_to_and.setChecked(true);
+        And_to_SD.setEnabled(false);
     }
 }
