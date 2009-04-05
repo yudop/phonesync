@@ -1,11 +1,13 @@
 package phone.sync;
 
 import android.app.Activity;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Contacts;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.TextView;
 import java.io.FileInputStream;
 import java.io.BufferedReader;
@@ -13,8 +15,25 @@ import java.io.InputStreamReader;
 import android.database.Cursor;
 import java.io.File;
 
-
 public class phonesync extends Activity {
+	
+	void TextLog(String LogText, int Action) {
+		final TextView TxtLog = (TextView) findViewById(R.id.TextLog );
+		
+		switch (Action) {
+			case 0: 
+					TxtLog.setText(LogText);
+					break;
+			case 1: 
+					TxtLog.setText(TxtLog.getText() + "\n" + LogText);
+					break;
+			case 2: 
+					TxtLog.setText(TxtLog.getText() + LogText);
+					break;
+			
+		}
+			
+	}
 	
 	public void DeleteCintact()
 	{
@@ -372,14 +391,9 @@ public class phonesync extends Activity {
 	
 	}
 	
-    /** Called when the activity is first created. */
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        //setContentView(R.layout.main);
-
-        TextView tv = new TextView(this);
-        /*
+	void Sd_TO_Android()
+	{
+		/*
          *  Read File
          * 
          */
@@ -394,6 +408,8 @@ public class phonesync extends Activity {
         strLine = "Init \n";
         int k = 0;
         int j = 0;
+        
+        TextLog("Import SD to Android Contacts. Wait please..\n",0);
 	        try { // catches IOException below
 	        	
 	        	// ** File Read to SD OK
@@ -406,13 +422,18 @@ public class phonesync extends Activity {
 	        		if (j > 0)
 	        			if (AddContact(string) > 0)
 	        				k++;
+	        		
+	        		TextLog(".",2);
+	        		
 	        		j++;
 	        		//StCampiRubrica = null;
 	        		//StCampiRubrica = string.split(",");
 	        		//strLine = strLine + string + "\n";
 	        	}
 	        	strLine = "Fine Importzione. " + k ;
-	        	tv.setText(strLine);
+	        	TextLog(strLine,1);
+	        	// Show the result
+	        	
 	        	reader.close();
 	        	// ************************************************************
 	        		        	
@@ -429,12 +450,34 @@ public class phonesync extends Activity {
                 // ************************************************************
 	        	
 	       } catch (Exception e) {
-	    	   tv.setText("Error: " + e.getMessage());
+	    	   TextLog("Error: " + e.getMessage(),0);
+	    	   
 	       }
-
-	       setContentView(tv);
-            
-            //AddContact();
+	}
+	
+	
+	
+    /** Called when the activity is first created. */
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+    	super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
+        
+        final Button but_start = (Button) findViewById(R.id.ButStart );
+        
+        TextLog("Start application..",0);
+    	
+        //public void Log() {
+        	
+        //}
+        
+        but_start.setOnClickListener(new OnClickListener() {
+        public void onClick(View v) {
+            	//Toast.makeText(phonesync.this, "Premuto", Toast.LENGTH_SHORT).show();
+            	Sd_TO_Android();
+            }
+        });
+		
 
     }
 }

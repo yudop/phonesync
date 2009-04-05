@@ -7,14 +7,36 @@
 <TextView  
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content" 
-    android:text="@string/hello"
-    />
+    android:textStyle="bold" android:text="PhoneSync"/>
 
-<EditText 
-	android:id="@+id/edittext" 
+<TextView android:id="@+id/TextLog" android:layout_width="wrap_content" android:layout_height="wrap_content" android:lines="5" android:text="XXXX"></TextView><RadioButton android:id="@+id/radio_Sd_Android"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="Sd card To Android" android:checked="false"/>
+
+<RadioGroup
+  android:layout_width="fill_parent"
+  android:layout_height="wrap_content"
+  android:orientation="vertical">
+  
+  <RadioButton android:id="@+id/radio_Android_Sd"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="Android to Sd card" />
+  
+
+
+</RadioGroup>
+
+<EditText android:id="@+id/TxFileName" 
 	android:layout_width="fill_parent" 
-	android:layout_height="wrap_content" android:text="test">
+	android:layout_height="wrap_content" 
+	android:text="/sdcard/contact.csv">
+</EditText>
 	
-	</EditText>
+<Button android:id="@+id/ButStart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start Sync" android:layout_gravity="bottom|right"/>
 
 </LinearLayout>
