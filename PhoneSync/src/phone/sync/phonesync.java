@@ -1,9 +1,10 @@
 package phone.sync;
 
+import org.openintents.intents.FileManagerIntents;
+
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,66 +13,19 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.RadioButton;
 import android.widget.Toast;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
-import android.view.LayoutInflater;
 import java.io.FileInputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import android.database.Cursor;
-import android.text.Editable;
 import java.io.File;
 
 public class phonesync extends Activity {
+	protected static final int REQUEST_CODE_PICK_FILE_OR_DIRECTORY = 1;
 	
-	private static final int OPEN_FILE = 1;
-	
-	@Override
-    protected Dialog onCreateDialog(int id) {
-        switch (id) {
-        	case OPEN_FILE:
-        		LayoutInflater factory = LayoutInflater.from(this);
-        		final View textEntry = factory.inflate(R.layout.dialog_filename  , null);
-        		ImageButton buttonFileManager = (ImageButton) findViewById(R.id.file_manager);
-        		
-	        	return new AlertDialog.Builder(phonesync.this)
-	            	.setTitle(R.string.DIALOG_FILE_NAME )
-	            	.setView(textEntry)
-	            	
-	            	/*
-	            	.setItems(R.id.file_manager , new DialogInterface.OnClickListener() {
-	            	public void onClick(DialogInterface dialog, int whichButton) {
-                    	Toast.makeText(phonesync.this, "Premuto", Toast.LENGTH_SHORT).show();
-                        
-                    	}
-	            	})
-	            	*/
-	            
-	            	.setPositiveButton(R.string.DIALOG_OK , new DialogInterface.OnClickListener() {
-	            	public void onClick(DialogInterface dialog, int whichButton) {
-	
-	                    /* User clicked OK so do some stuff */
-	            		}
-	            	})
-	            	
-	            	.setNegativeButton(R.string.DIALOG_CANCEL , new DialogInterface.OnClickListener() {
-	            		public void onClick(DialogInterface dialog, int whichButton) {
-	
-	                    /* User clicked cancel so do some stuff */
-	            		}
-	            	})
-	            	.create();
-        		
-	        	
-        }
-        
-        return null;
-	 }
+	protected EditText TxFileName;
 	
 	void TextLog(String LogText, int Action) {
 		final TextView TxtLog = (TextView) findViewById(R.id.TextLog );
@@ -510,33 +464,51 @@ public class phonesync extends Activity {
 	       }
 	}
 	
-	
-	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
+    	
     	super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
+        TxFileName = (EditText) findViewById(R.id.TxFileName);
         final Button but_start 		= (Button) findViewById(R.id.ButStart );
         final Button but_selfile 	= (Button) findViewById(R.id.ButSelFile );
-        final EditText TxFileName 	= (EditText) findViewById(R.id.TxFileName );
         
+        //final EditText TxFileName 	= (EditText) findViewById(R.id.TxFileName );
         TextLog("Start application..",0);
         
         but_selfile.setOnClickListener(new OnClickListener() {
     	public void onClick(View v) {
          		TextLog("Sel File ....",0);
-         		showDialog(OPEN_FILE);
+         		
+         		String fileName = TxFileName.getText().toString();
+         		// Note the different intent: PICK_DIRECTORY
+        		Intent intent = new Intent(FileManagerIntents.ACTION_PICK_FILE);
+        		
+        		// Construct URI from file name.
+        		intent.setData(Uri.parse("file://" + fileName));
+        		
+        		// Set fancy title and button
+        		intent.putExtra(FileManagerIntents.EXTRA_TITLE, getString(R.string.open_title));
+        		intent.putExtra(FileManagerIntents.EXTRA_BUTTON_TEXT, getString(R.string.open_button));
+        		
+        		try {
+        			startActivityForResult(intent, REQUEST_CODE_PICK_FILE_OR_DIRECTORY);
+        		} catch (ActivityNotFoundException e) {
+        			//No compatible file manager was found.
+        			Toast.makeText(phonesync.this, R.string.no_filemanager_installed, 
+        					Toast.LENGTH_SHORT).show();
+        		}
+        		
+        		
              }
          });
         
         but_start.setOnClickListener(new OnClickListener() {
         public void onClick(View v) {
-            //Toast.makeText(phonesync.this, "Premuto", Toast.LENGTH_SHORT).show();
-        		TextLog("Read file..",0);
-        		final Editable fileName = TxFileName.getText();
-            	Sd_TO_Android(fileName.toString());
+        		TextLog("Read file.. Sd To Android",0);
+        		Sd_TO_Android(TxFileName.getText().toString());	
             }
         });
 		
@@ -556,4 +528,33 @@ public class phonesync extends Activity {
         SD_to_and.setChecked(true);
         And_to_SD.setEnabled(false);
     }
+    
+    /**
+     * This is called after the file manager finished.
+     */
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+
+		switch (requestCode) {
+		case REQUEST_CODE_PICK_FILE_OR_DIRECTORY:
+			if (resultCode == RESULT_OK && data != null) {
+				// obtain the filename
+				String filename = data.getDataString();
+				if (filename != null) {
+					// Get rid of URI prefix:
+					if (filename.startsWith("file://")) {
+						filename = filename.substring(7);
+					}
+					
+					Toast.makeText(phonesync.this, filename, 
+	    					Toast.LENGTH_SHORT).show();
+					
+					TxFileName.setText(filename);
+				}				
+				
+			}
+			break;
+		}
+	}
 }

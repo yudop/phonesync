@@ -6,4 +6,7 @@
 	<string name="DIALOG_OK">Ok</string>
 	<string name="DIALOG_CANCEL">Cancel</string>
 	<string name="no_filemanager_installed">No compatible file manager found</string>
+
+<string name="open_button">Open</string>
+<string name="open_title">Select file</string>
 </resources>
