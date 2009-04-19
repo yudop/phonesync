@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello World, phonesync</string>
-    <string name="app_name"></string>
+    <string name="hello">PhoneSync</string>
+    <string name="app_name">PhoneSync</string>
+    <string name="DIALOG_FILE_NAME">File Name</string>
+	<string name="DIALOG_OK">Ok</string>
+	<string name="DIALOG_CANCEL">Cancel</string>
+	<string name="no_filemanager_installed">No compatible file manager found</string>
 </resources>
