@@ -39,10 +39,17 @@
 	android:layout_width="fill_parent" 
 	android:layout_height="wrap_content" android:text="/sdcard/PhoneSync/contacts.csv">
 </EditText>
-	
+
+<Button android:id="@+id/ButSelFile" 
+	android:layout_width="wrap_content" 
+	android:layout_height="wrap_content"
+	android:text="Sel File" 
+	android:layout_gravity="bottom|right" />
+
 <Button android:id="@+id/ButStart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start Sync" android:layout_gravity="bottom|right"/>
+        android:text="Start Sync" 
+        android:layout_gravity="bottom|right"/>
 
 </LinearLayout>

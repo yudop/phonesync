@@ -1,7 +1,10 @@
 package phone.sync;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Contacts;
@@ -9,9 +12,14 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.RadioButton;
 import android.widget.Toast;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.view.LayoutInflater;
 import java.io.FileInputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -19,8 +27,51 @@ import android.database.Cursor;
 import android.text.Editable;
 import java.io.File;
 
-
 public class phonesync extends Activity {
+	
+	private static final int OPEN_FILE = 1;
+	
+	@Override
+    protected Dialog onCreateDialog(int id) {
+        switch (id) {
+        	case OPEN_FILE:
+        		LayoutInflater factory = LayoutInflater.from(this);
+        		final View textEntry = factory.inflate(R.layout.dialog_filename  , null);
+        		ImageButton buttonFileManager = (ImageButton) findViewById(R.id.file_manager);
+        		
+	        	return new AlertDialog.Builder(phonesync.this)
+	            	.setTitle(R.string.DIALOG_FILE_NAME )
+	            	.setView(textEntry)
+	            	
+	            	/*
+	            	.setItems(R.id.file_manager , new DialogInterface.OnClickListener() {
+	            	public void onClick(DialogInterface dialog, int whichButton) {
+                    	Toast.makeText(phonesync.this, "Premuto", Toast.LENGTH_SHORT).show();
+                        
+                    	}
+	            	})
+	            	*/
+	            
+	            	.setPositiveButton(R.string.DIALOG_OK , new DialogInterface.OnClickListener() {
+	            	public void onClick(DialogInterface dialog, int whichButton) {
+	
+	                    /* User clicked OK so do some stuff */
+	            		}
+	            	})
+	            	
+	            	.setNegativeButton(R.string.DIALOG_CANCEL , new DialogInterface.OnClickListener() {
+	            		public void onClick(DialogInterface dialog, int whichButton) {
+	
+	                    /* User clicked cancel so do some stuff */
+	            		}
+	            	})
+	            	.create();
+        		
+	        	
+        }
+        
+        return null;
+	 }
 	
 	void TextLog(String LogText, int Action) {
 		final TextView TxtLog = (TextView) findViewById(R.id.TextLog );
@@ -79,13 +130,13 @@ public class phonesync extends Activity {
 	        	10 Numero cellulare,
 	        	11 Indirizzo di casa,
 	        	12 Indirizzo di casa 2,
-	        	13 Cittˆ di residenza,
+	        	13 Cittï¿½ di residenza,
 	        	14 Provincia di residenza,
 	        	15 CAP di residenza,
 	        	16 Nazione di residenza,
 	        	17 Indirizzo di lavoro,
 	        	18 Indirizzo di lavoro 2,
-	        	19 Cittˆ di lavoro,
+	        	19 Cittï¿½ di lavoro,
 	        	20 Provincia di lavoro,
 	        	21 CAP di lavoro,Nazione di lavoro,
 	        	22 Qualifica,Dipartimento,
@@ -467,20 +518,23 @@ public class phonesync extends Activity {
     	super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        final Button but_start = (Button) findViewById(R.id.ButStart );
-        final EditText TxFileName = (EditText) findViewById(R.id.TxFileName );
+        final Button but_start 		= (Button) findViewById(R.id.ButStart );
+        final Button but_selfile 	= (Button) findViewById(R.id.ButSelFile );
+        final EditText TxFileName 	= (EditText) findViewById(R.id.TxFileName );
         
-                
         TextLog("Start application..",0);
-    	
-        //public void Log() {
-        	
-        //}
+        
+        but_selfile.setOnClickListener(new OnClickListener() {
+    	public void onClick(View v) {
+         		TextLog("Sel File ....",0);
+         		showDialog(OPEN_FILE);
+             }
+         });
         
         but_start.setOnClickListener(new OnClickListener() {
         public void onClick(View v) {
-            	//Toast.makeText(phonesync.this, "Premuto", Toast.LENGTH_SHORT).show();
-        	TextLog("Read file..",0);
+            //Toast.makeText(phonesync.this, "Premuto", Toast.LENGTH_SHORT).show();
+        		TextLog("Read file..",0);
         		final Editable fileName = TxFileName.getText();
             	Sd_TO_Android(fileName.toString());
             }
