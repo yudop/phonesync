@@ -16,10 +16,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.RadioButton;
 import android.widget.Toast;
+import android.database.Cursor;
 import java.io.FileInputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import android.database.Cursor;
+import java.io.FileOutputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 
 public class phonesync extends Activity {
@@ -45,7 +47,7 @@ public class phonesync extends Activity {
 			
 	}
 	
-	public void DeleteCintact()
+	public void DeleteContact()
 	{
 	/*
 	
@@ -69,7 +71,7 @@ public class phonesync extends Activity {
 	        * ADD new Contact to Android
 	        * 
 	        * Input: 
-	        *        stContact - Format in .CSV
+	        *        stContact - Format in .CSV thunderbird
 	        *        
 	        	0  Nome,
 	        	1  Cognome,
@@ -227,7 +229,7 @@ public class phonesync extends Activity {
 			        	}
 		        	}
 	        	
-	        	// add fax number
+	        	// add Phone Home
 	        	if (StCampiRubrica.length >= 8)
 		        	if (StCampiRubrica[7].trim().length() != 0)
 		        	{
@@ -246,7 +248,7 @@ public class phonesync extends Activity {
 			        	}
 		        	}
 	        	
-	        	// add fax number
+	        	// add fax number work
 	        	if (StCampiRubrica.length >= 9)
 		        	if (StCampiRubrica[8].trim().length() != 0)
 		        	{
@@ -401,16 +403,89 @@ public class phonesync extends Activity {
 	
 	}
 	
+	
+	void ReadContact(String fileName)
+	{
+		/*
+		 *  Read Contact from  Android
+		 * 
+		 */
+		
+		// Find exist a contact to Android Phone
+        String[] projection = new String[] {
+        		Contacts.People._ID,
+                Contacts.People.NAME,
+                Contacts.People.NUMBER,
+             };
+
+        //Get the base URI for the People table in the Contacts content provider.
+		Uri contacts =  Contacts.People.CONTENT_URI;
+		
+		//Make the query. 
+		Cursor cur = managedQuery(contacts,
+		                projection, 	// Which columns to return 
+		                null,    		// Which rows to return (all rows)
+		                null,       	// Selection arguments (none)
+		                null);
+		
+
+		 // address = cur.getString(postalAddress);
+	
+		if (cur.moveToFirst()) {
+			
+			String OutContacts;
+			
+			int nameColumn = cur.getColumnIndex(Contacts.People.NAME); 
+	        int phoneColumn = cur.getColumnIndex(Contacts.People.NUMBER);
+	        //int data = cur.getColumnIndex(Contacts.ContactMethods.DATA);
+	        
+	        OutContacts = "";
+	        
+	        do {
+	        	
+	        	OutContacts = OutContacts + cur.getString(nameColumn); 
+	        	
+	        	if (cur.getString(phoneColumn) != null) 
+	        		OutContacts = OutContacts + "," + cur.getString(phoneColumn);
+	        	/*
+	        	if (cur.getString(postalAddress) != null) 
+	        		OutContacts = OutContacts + "," + cur.getString(postalAddress);
+	        	*/
+	        
+	        	OutContacts = OutContacts + "\n";
+	        } while (cur.moveToNext());
+			
+	        TextLog(OutContacts,1 );
+	        Android_TO_Sd(fileName, OutContacts);
+	    }
+	    
+
+	}
+	
+	void Android_TO_Sd(String fileName, String OutContact)
+	{
+		/*
+		 * 
+		 *  Write File
+		 *  File Save to SD OK 
+		 */
+		try { 
+			File myFile = new File(fileName);
+			myFile.createNewFile();
+			FileOutputStream fOut =  new FileOutputStream(myFile);
+			BufferedOutputStream bos = new BufferedOutputStream( fOut );
+			bos.write(OutContact.getBytes());
+			bos.close();
+		} catch (Exception e) {
+	    	   TextLog("Error IO File: " + e.getMessage(),0);
+	    }
+		
+	}
+	
 	void Sd_TO_Android(String fileName)
 	{
 		/*
          *  Read File
-         * 
-         */
-		
-        
-        /*
-         * TEST FILE READ / WRITE
          * 
          */
         String strLine;
@@ -435,34 +510,17 @@ public class phonesync extends Activity {
 	        		TextLog(".",2);
 	        		
 	        		j++;
-	        		//StCampiRubrica = null;
-	        		//StCampiRubrica = string.split(",");
-	        		//strLine = strLine + string + "\n";
 	        	}
 	        	strLine = "Fine Importzione. " + k ;
 	        	TextLog(strLine,1);
-	        	// Show the result
-	        	
 	        	reader.close();
-	        	// ************************************************************
-	        		        	
-	        	// ** File Save to SD OK
-	        	/*
-	        	File myFile = new File("/sdcard/export.xml");
-                myFile.createNewFile();
-                FileOutputStream fOut =  new FileOutputStream(myFile);
-                BufferedOutputStream bos = new BufferedOutputStream( fOut );
-                String stg = "1234 test";
-                bos.write(stg.getBytes());
-                bos.close();
-                */
-                // ************************************************************
-	        	
 	       } catch (Exception e) {
 	    	   TextLog("Error: " + e.getMessage(),0);
 	    	   
 	       }
 	}
+	
+	int SelListener = 0;
 	
     /** Called when the activity is first created. */
     @Override
@@ -499,24 +557,40 @@ public class phonesync extends Activity {
         			//No compatible file manager was found.
         			Toast.makeText(phonesync.this, R.string.no_filemanager_installed, 
         					Toast.LENGTH_SHORT).show();
+        			
         		}
         		
         		
              }
          });
         
+        // Click Button 
         but_start.setOnClickListener(new OnClickListener() {
-        public void onClick(View v) {
+        	public void onClick(View v) {
         		TextLog("Read file.. Sd To Android",0);
-        		Sd_TO_Android(TxFileName.getText().toString());	
+        		
+        		if (SelListener == 0) 
+        			Sd_TO_Android(TxFileName.getText().toString());
+        		else	
+        			ReadContact(TxFileName.getText().toString());
+        		       		
             }
         });
 		
+        
+        // Radio Button
         OnClickListener radio_listener = new OnClickListener() {
             public void onClick(View v) {
                 // Perform action on clicks
                 RadioButton rb = (RadioButton) v;
+                
+                if (rb.getTag().toString().compareTo("0") == 0) 
+        			SelListener = 0;
+        		else
+        			SelListener = 1;
+        		
                 Toast.makeText(phonesync.this, rb.getText(), Toast.LENGTH_SHORT).show();
+                
             }
         };
         
@@ -526,7 +600,6 @@ public class phonesync extends Activity {
         And_to_SD.setOnClickListener(radio_listener);
         // Set default value
         SD_to_and.setChecked(true);
-        And_to_SD.setEnabled(false);
     }
     
     /**

@@ -25,12 +25,12 @@
   <RadioButton android:id="@+id/SD_to_and"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:text="SD Card to Android" />
+      android:text="SD Card to Android" android:tag="0"/>
   
   <RadioButton android:id="@+id/And_to_SD"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:text="Android to SD Card" />
+      android:text="Android to SD Card" android:tag="1"/>
   
 </RadioGroup>
 
