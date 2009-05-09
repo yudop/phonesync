@@ -24,11 +24,74 @@ import java.io.FileOutputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+
+import android.util.Log;
+
 public class phonesync extends Activity {
+	
+
+	static final int PROGRESS_DIALOG = 0;
+    ProgressDialog progressDialog;
 	protected static final int REQUEST_CODE_PICK_FILE_OR_DIRECTORY = 1;
-	
 	protected EditText TxFileName;
+    
+    protected Dialog onCreateDialog(int id) {
+        switch(id) {
+        case PROGRESS_DIALOG:
+            progressDialog = new ProgressDialog(phonesync.this);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.setMessage("Working...");
+            progressDialog.setIndeterminate(true);
+            progressDialog.setCancelable(true);
+            return progressDialog;
+        default:
+            return null;
+        }
+    }
+
+        
 	
+	String[] baseProjection = new String[] {
+            android.provider.BaseColumns._ID,
+            android.provider.Contacts.PeopleColumns.DISPLAY_NAME,
+            android.provider.Contacts.PeopleColumns.NOTES,
+            android.provider.Contacts.PeopleColumns.STARRED
+    };
+    
+    String[] contactMethodsProjection = new String[] {
+            android.provider.BaseColumns._ID,
+            android.provider.Contacts.ContactMethodsColumns.DATA,
+            android.provider.Contacts.ContactMethodsColumns.AUX_DATA,
+            android.provider.Contacts.ContactMethodsColumns.KIND,
+            android.provider.Contacts.ContactMethodsColumns.TYPE
+    };
+    
+    String[] phonesProjection = new String[] {
+            android.provider.BaseColumns._ID,
+            android.provider.Contacts.PhonesColumns.LABEL,
+            android.provider.Contacts.PhonesColumns.NUMBER,
+            android.provider.Contacts.PhonesColumns.NUMBER_KEY,
+            android.provider.Contacts.PhonesColumns.TYPE      
+    };
+    
+    
+    public class User 
+    {
+        String title;
+        String name;
+        String company;
+        String notes;
+        String photo;
+        boolean starred;
+        List contactMethods = new ArrayList();
+        List phones = new ArrayList();
+    }
+
 	void TextLog(String LogText, int Action) {
 		final TextView TxtLog = (TextView) findViewById(R.id.TextLog );
 		
@@ -403,64 +466,171 @@ public class phonesync extends Activity {
 	
 	}
 	
+	/*
+	 *  Read Contact from  Android
+	 * 
+	 */
+	
 	
 	void ReadContact(String fileName)
 	{
-		/*
-		 *  Read Contact from  Android
-		 * 
-		 */
-		
-		// Find exist a contact to Android Phone
-        String[] projection = new String[] {
-        		Contacts.People._ID,
-                Contacts.People.NAME,
-                Contacts.People.NUMBER,
-             };
-
-        //Get the base URI for the People table in the Contacts content provider.
-		Uri contacts =  Contacts.People.CONTENT_URI;
-		
-		//Make the query. 
-		Cursor cur = managedQuery(contacts,
-		                projection, 	// Which columns to return 
-		                null,    		// Which rows to return (all rows)
-		                null,       	// Selection arguments (none)
-		                null);
-		
-
-		 // address = cur.getString(postalAddress);
-	
-		if (cur.moveToFirst()) {
-			
-			String OutContacts;
-			
-			int nameColumn = cur.getColumnIndex(Contacts.People.NAME); 
-	        int phoneColumn = cur.getColumnIndex(Contacts.People.NUMBER);
-	        //int data = cur.getColumnIndex(Contacts.ContactMethods.DATA);
-	        
-	        OutContacts = "";
-	        
-	        do {
-	        	
-	        	OutContacts = OutContacts + cur.getString(nameColumn); 
-	        	
-	        	if (cur.getString(phoneColumn) != null) 
-	        		OutContacts = OutContacts + "," + cur.getString(phoneColumn);
-	        	/*
-	        	if (cur.getString(postalAddress) != null) 
-	        		OutContacts = OutContacts + "," + cur.getString(postalAddress);
-	        	*/
-	        
-	        	OutContacts = OutContacts + "\n";
-	        } while (cur.moveToNext());
-			
-	        TextLog(OutContacts,1 );
-	        Android_TO_Sd(fileName, OutContacts);
-	    }
-	    
-
+		String OutContacts;
+		OutContacts = doUserContent ();
+		Android_TO_Sd(fileName, OutContacts);
 	}
+	
+	String AllPhones (Cursor cursor)
+    {
+		String StOut = "";
+		
+		while (cursor.moveToNext())
+        {  
+                String label = cursor.getString(cursor.getColumnIndex(Contacts.PhonesColumns.LABEL));
+                String number = cursor.getString(cursor.getColumnIndex(Contacts.PhonesColumns.NUMBER));
+                int type = cursor.getInt(cursor.getColumnIndex(Contacts.PhonesColumns.TYPE));
+                String encodedNumber = number;
+                try
+                {
+                		encodedNumber = URLEncoder.encode(number, "UTF-8");             
+                }
+                catch (Exception e)
+                {
+                        Log.w("Jetty", "Encoding telephone number failed");
+                }
+                
+                switch (type) {
+                	case Contacts.Phones.TYPE_MOBILE:
+                		StOut =  StOut + "MOBILE :";
+                		break;
+                	
+                	case Contacts.Phones.TYPE_HOME:
+                		StOut =  StOut + "HOME :";
+                		break;
+                		
+                	case  Contacts.Phones.TYPE_WORK:
+                		StOut =  StOut + "WORK :";
+                		break;
+                	
+                	case  Contacts.Phones.TYPE_FAX_HOME:
+                		StOut =  StOut + "FAX_HOME :";
+                		break;
+                	
+                	case  Contacts.Phones.TYPE_FAX_WORK:
+                		StOut =  StOut + "FAX_WORK :";
+                		break;
+                	
+                	default:
+                		StOut =  StOut + "OTHER :";
+            			break;
+                		
+                }
+                
+                if (label != null)
+                	StOut = StOut + label + ";";
+                
+                StOut =  StOut + " " + number+ "\n";
+        }
+        return StOut;
+    }
+
+	String ContactMethods (Cursor cursor)
+    {
+		String StOut = "";
+        while (cursor.moveToNext())
+        { 
+            String data = cursor.getString(cursor.getColumnIndex(Contacts.ContactMethodsColumns.DATA));
+            String auxData = cursor.getString(cursor.getColumnIndex(Contacts.ContactMethodsColumns.AUX_DATA));
+           
+            int kind = -99;
+            int type = -99;
+            
+            if (data!=null||auxData!=null)
+            {
+                kind = cursor.getInt(cursor.getColumnIndex(Contacts.ContactMethodsColumns.KIND));
+                type = cursor.getInt(cursor.getColumnIndex(Contacts.ContactMethodsColumns.TYPE));
+            }
+            
+            
+            switch (kind) {
+	        	case Contacts.KIND_EMAIL:
+	        		StOut =  StOut + "EMAIL :";
+	        		break;
+	        	
+	        	case Contacts.KIND_POSTAL:
+	        		StOut =  StOut + "POSTAL :";
+	        		break;
+	        		
+	        	case Contacts.KIND_IM:
+	        		StOut =  StOut + "IM :";
+	        		break;
+	        		
+	        	default:
+	        		StOut =  StOut + "OTHER :";
+	    			break;
+	        		
+	        }
+        
+            if (data!=null)
+                		StOut =  StOut + data;
+            if (auxData!=null)
+                		StOut =  StOut + data;
+            
+            
+            StOut =  StOut + "\n";
+        }
+        return StOut;
+    }  
+	
+	String doUserContent()
+    {
+		
+		String OutContacts = "";
+		String SingheContact;
+		Cursor cursor;
+		Cursor cursorContacts;
+		
+        //query for the user's standard details
+		//cursor = getContentResolver().query(Contacts.People.CONTENT_URI, baseProjection, "people."+android.provider.BaseColumns._ID+" = 99", null, Contacts.PeopleColumns.NAME+" ASC");
+        //OutContacts = UserDetails(cursor);
+        //cursor.close();
+        
+		cursorContacts = getContentResolver().query(Contacts.People.CONTENT_URI, baseProjection, null, null, Contacts.PeopleColumns.NAME+" ASC");
+		
+		cursorContacts.moveToFirst();
+		do {
+			
+			//User details
+			String id = cursorContacts.getString(cursorContacts.getColumnIndex(android.provider.BaseColumns._ID));  
+            String name =  cursorContacts.getString(cursorContacts.getColumnIndex(Contacts.PeopleColumns.DISPLAY_NAME));
+            String company = null;
+            String notes = cursorContacts.getString(cursorContacts.getColumnIndex(Contacts.PeopleColumns.NOTES));
+            SingheContact = "ID:" + id + "\n" +  name + "\n";
+            
+            if (company!=null)
+            	SingheContact = SingheContact + company + "\n";
+            
+            
+	        //query for all phone details
+	        cursor = getContentResolver().query(Contacts.Phones.CONTENT_URI, phonesProjection, "people."+android.provider.BaseColumns._ID+" = " + id , null, Contacts.PhonesColumns.TYPE+" ASC");
+	        SingheContact = SingheContact + AllPhones (cursor);
+	        cursor.close();
+	        
+	        //query for all contact details
+	        cursor = getContentResolver().query(Contacts.ContactMethods.CONTENT_URI, contactMethodsProjection, "people."+android.provider.BaseColumns._ID+" = " + id, null, Contacts.ContactMethodsColumns.KIND +" DESC");
+	        SingheContact = SingheContact + ContactMethods (cursor);
+	        cursor.close(); 
+	        
+	        if (notes!=null)
+            	SingheContact = SingheContact + "Notes:" + notes + "\n";
+            
+	        OutContacts = OutContacts + SingheContact + "\n";
+	        
+    	} while (cursorContacts.moveToNext());
+		
+        cursorContacts.close();	        
+        return OutContacts;
+    }
+
 	
 	void Android_TO_Sd(String fileName, String OutContact)
 	{
@@ -477,7 +647,7 @@ public class phonesync extends Activity {
 			bos.write(OutContact.getBytes());
 			bos.close();
 		} catch (Exception e) {
-	    	   TextLog("Error IO File: " + e.getMessage(),0);
+	    	   //TextLog("Error IO File: " + e.getMessage(),0);
 	    }
 		
 	}
@@ -492,8 +662,8 @@ public class phonesync extends Activity {
         strLine = "Init \n";
         int k = 0;
         int j = 0;
-        TextLog("File :" + fileName,1);
-        TextLog("Import SD to Android Contacts. Wait please.",1);
+        //TextLog("File :" + fileName,1);
+        //TextLog("Import SD to Android Contacts. Wait please.",1);
 	        try { // catches IOException below
 	        	
 	        	// ** File Read to SD OK
@@ -507,16 +677,13 @@ public class phonesync extends Activity {
 	        			if (AddContact(string) > 0)
 	        				k++;
 	        		
-	        		TextLog(".",2);
-	        		
 	        		j++;
 	        	}
 	        	strLine = "Fine Importzione. " + k ;
-	        	TextLog(strLine,1);
+	        	//TextLog(strLine,1);
 	        	reader.close();
 	       } catch (Exception e) {
-	    	   TextLog("Error: " + e.getMessage(),0);
-	    	   
+	    	   //TextLog("Error: " + e.getMessage(),0);  
 	       }
 	}
 	
@@ -564,20 +731,38 @@ public class phonesync extends Activity {
              }
          });
         
+       
         // Click Button 
         but_start.setOnClickListener(new OnClickListener() {
         	public void onClick(View v) {
-        		TextLog("Read file.. Sd To Android",0);
-        		
+        		showDialog(PROGRESS_DIALOG);
         		if (SelListener == 0) 
-        			Sd_TO_Android(TxFileName.getText().toString());
-        		else	
-        			ReadContact(TxFileName.getText().toString());
-        		       		
+        		{
+        			TextLog("Read file.. Sd To Android",0);
+        			new Thread(new Runnable() {
+        			    public void run() {
+        			    	Sd_TO_Android(TxFileName.getText().toString());
+    				    	dismissDialog(PROGRESS_DIALOG);
+    				    	
+        			    }
+        			 }).start();
+        		}
+        			else
+        		{
+        			TextLog("Write file.. Android To Sd",0);
+        			new Thread(new Runnable() {
+        			    public void run() {
+        			    	ReadContact(TxFileName.getText().toString());
+    				    	dismissDialog(PROGRESS_DIALOG);
+        			    }
+        			  }).start();
+        		} 
+        		
+        		
             }
         });
 		
-        
+                
         // Radio Button
         OnClickListener radio_listener = new OnClickListener() {
             public void onClick(View v) {
@@ -593,6 +778,7 @@ public class phonesync extends Activity {
                 
             }
         };
+        
         
         final RadioButton SD_to_and = (RadioButton) findViewById(R.id.SD_to_and);
         final RadioButton And_to_SD = (RadioButton) findViewById(R.id.And_to_SD);
