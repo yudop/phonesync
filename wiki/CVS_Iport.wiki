@@ -1,6 +1,6 @@
-<p>CSV Import Format<br />
-  CVS records:</p>
-<p>0  Nome,<br />
+  CSV Import Format<br />
+  CVS records:<br>
+  0  Nome,<br />
   1  Cognome,<br />
   2  Nome visualizzato,<br />
   3  Soprannome,<br />
@@ -33,4 +33,4 @@
   30 Personalizzato  2,<br />
   31 Personalizzato  3,<br />
   32 Personalizzato 4,<br />
-  33 Note,</p>
+  33 Note
