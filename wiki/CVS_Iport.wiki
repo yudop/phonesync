@@ -1,37 +1,36 @@
-CSV Import Format
-CVS records:
-
-0  Nome,
-1  Cognome,
-2  Nome visualizzato,
-3  Soprannome,
-4  Email primaria,
-5  Email secondaria,
-6  Telefono ufficio,
-7  Telefono casa,
-8  Numero fax,
-9  Numero cercapersone,
-10 Numero cellulare,
-11 Indirizzo di casa,
-12 Indirizzo di casa 2,
-13 CittÔøΩ di residenza,
-14 Provincia di residenza,
-15 CAP di residenza,
-16 Nazione di residenza,
-17 Indirizzo di lavoro,
-18 Indirizzo di lavoro 2,
-19 CittÔøΩ di lavoro,
-20 Provincia di lavoro,
-21 CAP di lavoro,Nazione di lavoro,
-22 Qualifica,Dipartimento,
-23 Organizzazione,
-24 Pagina web 1,
-25 Pagina web 2,
-26 Anno di nascita,
-27 Mese di nascita,
-28 Giorno di nascita,
-29 Personalizzato  1,
-30 Personalizzato  2,
-31 Personalizzato  3,
-32 Personalizzato 4,
-33 Note,
+<p>CSV Import Format<br />
+  CVS records:</p>
+<p>0  Nome,<br />
+  1  Cognome,<br />
+  2  Nome visualizzato,<br />
+  3  Soprannome,<br />
+  4  Email primaria,<br />
+  5  Email secondaria,<br />
+  6  Telefono ufficio,<br />
+  7  Telefono casa,<br />
+  8  Numero fax,<br />
+  9  Numero cercapersone,<br />
+  10 Numero cellulare,<br />
+  11 Indirizzo di casa,<br />
+  12 Indirizzo di casa 2,<br />
+  13 CittÔøΩ di residenza,<br />
+  14 Provincia di residenza,<br />
+  15 CAP di residenza,<br />
+  16 Nazione di residenza,<br />
+  17 Indirizzo di lavoro,<br />
+  18 Indirizzo di lavoro 2,<br />
+  19 CittÔøΩ di lavoro,<br />
+  20 Provincia di lavoro,<br />
+  21 CAP di lavoro,Nazione di lavoro,<br />
+  22 Qualifica,Dipartimento,<br />
+  23 Organizzazione,<br />
+  24 Pagina web 1,<br />
+  25 Pagina web 2,<br />
+  26 Anno di nascita,<br />
+  27 Mese di nascita,<br />
+  28 Giorno di nascita,<br />
+  29 Personalizzato  1,<br />
+  30 Personalizzato  2,<br />
+  31 Personalizzato  3,<br />
+  32 Personalizzato 4,<br />
+  33 Note,</p>
