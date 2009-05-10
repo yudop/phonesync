@@ -263,7 +263,7 @@ public class phonesync extends Activity {
 			        	// Add E-Mail
 			        	
 			        	emailValues.put(Contacts.ContactMethods.DATA,
-			        			StCampiRubrica[4]);
+			        			StCampiRubrica[5]);
 			        	
 			        	
 			        	Uri emailUpdate = getContentResolver()
@@ -472,16 +472,35 @@ public class phonesync extends Activity {
 	 */
 	
 	
-	void ReadContact(String fileName)
+	void ReadContact(String fileName, int export_mode)
 	{
+		/*
+		 * 
+		 * Output: 
+	     *        stContact - Format in .CSV
+	     		0  Id,
+	        	1  Nome visualizzato,
+	        	2  Soprannome,
+	        	3  company,
+	        	4  Telefono 1,
+	        	5  Telefono 2,
+	        	6  Email primaria,
+	        	7  Email secondaria,
+	        	9  Indirizzo di casa,
+	        	10 Indirizzo di casa 2,
+	        	11 Note
+	     *        
+		 */
+		
 		String OutContacts;
-		OutContacts = doUserContent ();
+		OutContacts = doUserContent (export_mode);
 		Android_TO_Sd(fileName, OutContacts);
 	}
 	
-	String AllPhones (Cursor cursor)
+	String AllPhones (Cursor cursor, int export_mode)
     {
 		String StOut = "";
+		int number_count = 0;
 		
 		while (cursor.moveToNext())
         {  
@@ -498,44 +517,69 @@ public class phonesync extends Activity {
                         Log.w("Jetty", "Encoding telephone number failed");
                 }
                 
-                switch (type) {
-                	case Contacts.Phones.TYPE_MOBILE:
-                		StOut =  StOut + "MOBILE :";
-                		break;
-                	
-                	case Contacts.Phones.TYPE_HOME:
-                		StOut =  StOut + "HOME :";
-                		break;
-                		
-                	case  Contacts.Phones.TYPE_WORK:
-                		StOut =  StOut + "WORK :";
-                		break;
-                	
-                	case  Contacts.Phones.TYPE_FAX_HOME:
-                		StOut =  StOut + "FAX_HOME :";
-                		break;
-                	
-                	case  Contacts.Phones.TYPE_FAX_WORK:
-                		StOut =  StOut + "FAX_WORK :";
-                		break;
-                	
-                	default:
-                		StOut =  StOut + "OTHER :";
-            			break;
-                		
+                if (export_mode == 1)
+                {
+	                switch (type) {
+	                	case Contacts.Phones.TYPE_MOBILE:
+	                		StOut =  StOut + "MOBILE :";
+	                		break;
+	                	
+	                	case Contacts.Phones.TYPE_HOME:
+	                		StOut =  StOut + "HOME :";
+	                		break;
+	                		
+	                	case  Contacts.Phones.TYPE_WORK:
+	                		StOut =  StOut + "WORK :";
+	                		break;
+	                	
+	                	case  Contacts.Phones.TYPE_FAX_HOME:
+	                		StOut =  StOut + "FAX_HOME :";
+	                		break;
+	                	
+	                	case  Contacts.Phones.TYPE_FAX_WORK:
+	                		StOut =  StOut + "FAX_WORK :";
+	                		break;
+	                	
+	                	default:
+	                		StOut =  StOut + "OTHER :";
+	            			break;
+	                		
+	                }
+	                
+	                if (label != null)
+	                	StOut = StOut + label + ";";
+	                
+	                StOut =  StOut + " " + number+ "\n";
                 }
-                
-                if (label != null)
-                	StOut = StOut + label + ";";
-                
-                StOut =  StOut + " " + number+ "\n";
+                else
+                {
+                	
+                	number_count ++;
+                	if (number_count <= 2)
+                		StOut =  StOut + number+ ",";
+                	else
+                		return StOut;
+                }
         }
+		
+		if (export_mode == 2)
+		{
+			for (int i=number_count; i <= 2; i++)
+				StOut =  StOut + ",";
+		}
+		
         return StOut;
     }
 
-	String ContactMethods (Cursor cursor)
+	String ContactMethods (Cursor cursor, int export_mode)
     {
 		String StOut = "";
+		String StMail = "";
+		String StPostal = "";
+		
+		int count_email = 0;
+		int count_POSTAL = 0;
+		
         while (cursor.moveToNext())
         { 
             String data = cursor.getString(cursor.getColumnIndex(Contacts.ContactMethodsColumns.DATA));
@@ -550,42 +594,74 @@ public class phonesync extends Activity {
                 type = cursor.getInt(cursor.getColumnIndex(Contacts.ContactMethodsColumns.TYPE));
             }
             
-            
-            switch (kind) {
-	        	case Contacts.KIND_EMAIL:
-	        		StOut =  StOut + "EMAIL :";
-	        		break;
-	        	
-	        	case Contacts.KIND_POSTAL:
-	        		StOut =  StOut + "POSTAL :";
-	        		break;
-	        		
-	        	case Contacts.KIND_IM:
-	        		StOut =  StOut + "IM :";
-	        		break;
-	        		
-	        	default:
-	        		StOut =  StOut + "OTHER :";
-	    			break;
-	        		
-	        }
-        
-            if (data!=null)
-                		StOut =  StOut + data;
-            if (auxData!=null)
-                		StOut =  StOut + data;
-            
-            
-            StOut =  StOut + "\n";
+            if (export_mode == 1)
+            {
+	            switch (kind) {
+		        	case Contacts.KIND_EMAIL:
+		        		StOut =  StOut + "EMAIL :";
+		        		break;
+		        	
+		        	case Contacts.KIND_POSTAL:
+		        		StOut =  StOut + "POSTAL :";
+		        		break;
+		        		
+		        	case Contacts.KIND_IM:
+		        		StOut =  StOut + "IM :";
+		        		break;
+		        		
+		        	default:
+		        		StOut =  StOut + "OTHER :";
+		    			break;
+		        		
+		        }
+	        
+	            if (data!=null)
+	                		StOut =  StOut + data;
+	            if (auxData!=null)
+	                		StOut =  StOut + data;
+	            
+	            
+	            StOut =  StOut + "\n";
+            }
+            else
+            {
+            	switch (kind) {
+		        	case Contacts.KIND_EMAIL:
+		        		count_email ++; 
+		        		if (count_email <= 2)
+		        			StMail = StMail + data + ",";
+		        		break;
+		        	
+		        	case Contacts.KIND_POSTAL:
+		        		count_POSTAL ++;
+		        		if (count_POSTAL <= 2)
+		        			StPostal =  StPostal + data+ ",";
+		        		break;	
+            	}
+            }
         }
+        
+        
+        if (export_mode == 2)
+		{
+			for (int i=count_email; i <= 2; i++)
+				StMail = StMail + ",";
+			
+			for (int i=count_email; i <= 2; i++)
+				StPostal =  StPostal + ",";
+			
+			StOut = StMail + StPostal;
+		}
+        
+        
         return StOut;
     }  
 	
-	String doUserContent()
+	String doUserContent(int export_mode)
     {
 		
 		String OutContacts = "";
-		String SingheContact;
+		String SingheContact = "";
 		Cursor cursor;
 		Cursor cursorContacts;
 		
@@ -604,25 +680,38 @@ public class phonesync extends Activity {
             String name =  cursorContacts.getString(cursorContacts.getColumnIndex(Contacts.PeopleColumns.DISPLAY_NAME));
             String company = null;
             String notes = cursorContacts.getString(cursorContacts.getColumnIndex(Contacts.PeopleColumns.NOTES));
-            SingheContact = "ID:" + id + "\n" +  name + "\n";
+            if (export_mode == 1) 
+            	SingheContact = "ID:" + id + "\n" +  name + "\n";
+            else
+            	SingheContact = id + "," +  name + ",";
             
             if (company!=null)
-            	SingheContact = SingheContact + company + "\n";
-            
+            {
+            	if (export_mode == 1)
+            		SingheContact = SingheContact + company + "\n";
+            	else
+            		SingheContact = SingheContact + company + ",";
+            }
+            	else
+            		SingheContact = SingheContact + ",";
             
 	        //query for all phone details
 	        cursor = getContentResolver().query(Contacts.Phones.CONTENT_URI, phonesProjection, "people."+android.provider.BaseColumns._ID+" = " + id , null, Contacts.PhonesColumns.TYPE+" ASC");
-	        SingheContact = SingheContact + AllPhones (cursor);
+	        SingheContact = SingheContact + AllPhones (cursor, export_mode);
 	        cursor.close();
 	        
 	        //query for all contact details
 	        cursor = getContentResolver().query(Contacts.ContactMethods.CONTENT_URI, contactMethodsProjection, "people."+android.provider.BaseColumns._ID+" = " + id, null, Contacts.ContactMethodsColumns.KIND +" DESC");
-	        SingheContact = SingheContact + ContactMethods (cursor);
+	        SingheContact = SingheContact + ContactMethods (cursor, export_mode);
 	        cursor.close(); 
 	        
 	        if (notes!=null)
-            	SingheContact = SingheContact + "Notes:" + notes + "\n";
-            
+	        	if (export_mode == 1)
+	        		SingheContact = SingheContact + "Notes:" + notes + "\n";
+	        	else
+	        		SingheContact = SingheContact + notes;
+	        
+	        
 	        OutContacts = OutContacts + SingheContact + "\n";
 	        
     	} while (cursorContacts.moveToNext());
@@ -639,15 +728,17 @@ public class phonesync extends Activity {
 		 *  Write File
 		 *  File Save to SD OK 
 		 */
-		try { 
+		try {
 			File myFile = new File(fileName);
+			//File myFile = new File("/sdcard/PhoneSync/Export.txt");
 			myFile.createNewFile();
 			FileOutputStream fOut =  new FileOutputStream(myFile);
 			BufferedOutputStream bos = new BufferedOutputStream( fOut );
 			bos.write(OutContact.getBytes());
 			bos.close();
 		} catch (Exception e) {
-	    	   //TextLog("Error IO File: " + e.getMessage(),0);
+			 Toast.makeText(phonesync.this, "Error: " + e.getMessage(), 
+	   					Toast.LENGTH_SHORT).show();
 	    }
 		
 	}
@@ -662,13 +753,10 @@ public class phonesync extends Activity {
         strLine = "Init \n";
         int k = 0;
         int j = 0;
-        //TextLog("File :" + fileName,1);
-        //TextLog("Import SD to Android Contacts. Wait please.",1);
 	        try { // catches IOException below
 	        	
 	        	// ** File Read to SD OK
 	        	File infile = new File(fileName);
-	        	//StringBuffer buffer = new StringBuffer();
 	        	String string = new String();
 	        	BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(infile)));
 	        	while ((string = reader.readLine()) != null) {
@@ -683,7 +771,8 @@ public class phonesync extends Activity {
 	        	//TextLog(strLine,1);
 	        	reader.close();
 	       } catch (Exception e) {
-	    	   //TextLog("Error: " + e.getMessage(),0);  
+	    	   Toast.makeText(phonesync.this, "Error: " + e.getMessage(), 
+   					Toast.LENGTH_SHORT).show();  
 	       }
 	}
 	
@@ -752,7 +841,7 @@ public class phonesync extends Activity {
         			TextLog("Write file.. Android To Sd",0);
         			new Thread(new Runnable() {
         			    public void run() {
-        			    	ReadContact(TxFileName.getText().toString());
+        			    	ReadContact(TxFileName.getText().toString(), SelListener);
     				    	dismissDialog(PROGRESS_DIALOG);
         			    }
         			  }).start();
@@ -768,22 +857,27 @@ public class phonesync extends Activity {
             public void onClick(View v) {
                 // Perform action on clicks
                 RadioButton rb = (RadioButton) v;
-                
                 if (rb.getTag().toString().compareTo("0") == 0) 
-        			SelListener = 0;
-        		else
-        			SelListener = 1;
-        		
-                Toast.makeText(phonesync.this, rb.getText(), Toast.LENGTH_SHORT).show();
+                    SelListener = 0;
+
+                if (rb.getTag().toString().compareTo("1") == 0) 
+                    SelListener = 1;
                 
+                if (rb.getTag().toString().compareTo("2") == 0) 
+                    SelListener = 2;
+                
+                Toast.makeText(phonesync.this, rb.getText(), Toast.LENGTH_SHORT).show();
             }
         };
         
         
         final RadioButton SD_to_and = (RadioButton) findViewById(R.id.SD_to_and);
         final RadioButton And_to_SD = (RadioButton) findViewById(R.id.And_to_SD);
+        final RadioButton And_to_SD_CVS = (RadioButton) findViewById(R.id.And_to_SD_CVS);
         SD_to_and.setOnClickListener(radio_listener);
         And_to_SD.setOnClickListener(radio_listener);
+        And_to_SD_CVS.setOnClickListener(radio_listener);
+        
         // Set default value
         SD_to_and.setChecked(true);
     }
